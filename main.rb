@@ -1,44 +1,62 @@
-W = "W"
 B = "B"
-def generate_code()
-    # generate a 4 digit code peg
-    seed = rand()
-    code = []
-    for i in 0...4
-      if seed > 0.5
-        code.push(B)
-      else
-        code.push(W)
-      end
-    end
-    return code
-end
+W = "W"
+BLANK = "?"
 
-def feedback_code(guess, answer)
+class Board
+  attr_accessor :board_config
+
+  def initialize
+    @board_config = Array.new()
+    @dim = 4 # 4 slots
+    @limit = 12
+    for i in 0...@limit
+      @board_config.push(["_", "_", "_", "_"]) # 4 by 12, 2 for 
+    end
+    @code = generate_code()
+  end
+
+  def feedback_code(guess)
     # black: correct colour and position
     # white: correct colour, wrong position
     feedback = []
     
     guess.each_with_index do |g, idx|
       # not sure about the rules
-      if g == answer[idx]
+      if g == @code[idx]
         feedback.push(B)
-      else
+      elsif @code.include?(g)  
         feedback.push(W)
+      else
+        feedback.push(BLANK)
       end
-    
-    end    
+    end
+    return feedback
+  end
+
+  private
+  def generate_code
+    # generate a 4 digit code peg
+   
+    code = []
+    for i in 0...4
+      seed = rand()
+      code.push((10 *seed / 2).floor)
+    end
+    puts code.inspect
+    return code
+  end
 end
 
-def main
-  code = generate_code()
-  puts code.inspect
 
-  # hardcoded example move
-  guess = [B, W, W, B]
-  peg = feedback_code(guess, code)
+def main
+  board = Board.new()
+  # IO w/ terminal example move
+  guess = gets.strip.chars
+  puts guess
+  peg = board.feedback_code(guess)
   puts "Feedback"
   puts peg.inspect
+
 end
 
 main
