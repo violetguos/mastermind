@@ -3,9 +3,10 @@ W = "W"
 BLANK = "?"
 
 class Board
-  attr_accessor :board_config, :limit, :round
+  attr_accessor :board_config, :limit, :round, :player
 
-  def initialize
+  def initialize(player)
+    @player = player
     @board_config = Array.new()
     @dim = 4 # 4 slots
     @limit = 12
@@ -64,15 +65,17 @@ class Board
 
   def prompt()
 
-    # if human
-    # guess = ""
-    # loop do
-    #   guess = gets.strip.chars
-    #   if guess.length == 4
-    #     break
-    #   end
-    # end # end of do while
-    guess = self.code_break()
+    if @player == "human"
+      guess = ""
+      loop do
+        guess = gets.strip.chars
+        if guess.length == 4
+          break
+        end
+      end # end of do while
+    elsif @player == "computer"
+      guess = self.code_break()
+    end
 
     @round +=1
     @board_config[@round] = guess
@@ -124,10 +127,10 @@ end
 
 
 class Game
-  
 
   def initialize
-    @board = Board.new()
+    @mode = self.prompt()
+    @board = Board.new(@mode)
     @score_human = 0
     @score_machine = 0
   end
@@ -139,15 +142,22 @@ class Game
     @score_machine = @board.score
   end
 
-  
-  
+  def prompt
+    puts "Would you like to break code: [Y/N]"
+    ans = gets.chomp
+    if ans == "N"
+      return "computer"
+    else
+      return "human"
+    end
+  end
 end
 
 
 def main
+
   game = Game.new()
   game.human_code_breaker
-
 end
 
 main
