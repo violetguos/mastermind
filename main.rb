@@ -10,6 +10,7 @@ class Board
     @dim = 4 # 4 slots
     @limit = 12
     @round = 0
+    @peg_feedback = Array.new()
     for i in 0...@limit
       @board_config.push(["_", "_", "_", "_"]) # 4 by 12, 2 for 
     end
@@ -25,12 +26,11 @@ class Board
       # not sure about the rules
       if g == @code[idx]
         feedback.push(B)
-      elsif @code.include?(g)  
-        feedback.push(W)
       else
-        feedback.push(BLANK)
+        feedback.push(W)
       end
     end
+
     return feedback
   end
 
@@ -38,7 +38,7 @@ class Board
     @board_config.each_with_index do |row, idx|
       row.each_with_index do |elem, elem_idx|
         print elem
-        if elem_idx == (@limit - 1)
+        if elem_idx == (@dim - 1)
           print "\n"
         else
           print '|'
@@ -46,21 +46,65 @@ class Board
       end
     end
   end
-  
-  def prompt()
-    guess = ""
-    loop do
-      guess = gets.strip.chars
-      if guess.length == 4
-        break
+
+  def terminate?()
+    @peg_feedback.each do |p|
+      if p != B
+        return false
       end
-    end # end of do while
+    end
+    if !@peg_feedback.empty?
+      return true
+    end
+  end
+
+  def score()
+    puts "Current score: #{round}"
+  end
+
+  def prompt()
+
+    # if human
+    # guess = ""
+    # loop do
+    #   guess = gets.strip.chars
+    #   if guess.length == 4
+    #     break
+    #   end
+    # end # end of do while
+    guess = self.code_break()
 
     @round +=1
     @board_config[@round] = guess
     peg = feedback_code(guess)
+    print_board
     puts "Feedback"
     puts peg.inspect
+    @peg_feedback = peg
+  end
+
+  def code_break()
+    possible_set = ["0", "1", "2", "3", "4", "5"]
+    guess = []
+    prev_guess = @board_config[@round]
+    if @round == 0
+      return ["0", "0", "0", "0"]
+    else
+      elems_to_replace = @peg_feedback.count(W)
+      
+      # sample idxs to replace
+      if elems_to_replace == 4
+        for i in 0...4
+          guess.push(possible_set.sample(1)[0])
+        end
+      elsif
+        guess = prev_guess.shuffle
+        for i in 0...elems_to_replace
+          guess[i] = possible_set.sample(1)[0]
+        end
+      end
+      return guess
+    end
   end
 
   private
@@ -79,15 +123,31 @@ class Board
 end
 
 
+class Game
+  
 
+  def initialize
+    @board = Board.new()
+    @score_human = 0
+    @score_machine = 0
+  end
 
+  def human_code_breaker
+    while @board.round < @board.limit && !@board.terminate?()
+      @board.prompt()
+    end
+    @score_machine = @board.score
+  end
+
+  
+  
+end
 
 
 def main
-  board = Board.new()
-  while board.round < board.limit
-    board.prompt()
-  end
+  game = Game.new()
+  game.human_code_breaker
+
 end
 
 main
